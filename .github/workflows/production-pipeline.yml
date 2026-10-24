@@ -78,12 +78,16 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     environment: staging
+    env:
+      # multi-line output (one tag per line) -> pass via env, not inline in the script
+      IMAGE_TAGS: ${{ needs.build.outputs.image-tag }}
     steps:
       - name: Deploy to staging
         run: |
           echo "Deploying to staging..."
-          echo "Image: ${{ needs.build.outputs.image-tag }}"
-          # kubectl set image deployment/app app=${{ needs.build.outputs.image-tag }}
+          echo "Image tags:"
+          echo "$IMAGE_TAGS"
+          # kubectl set image deployment/app app=<image-tag>
 
   # Stage 4: Deploy to Production
   deploy-production:
@@ -91,8 +95,11 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     if: github.ref == 'refs/heads/main'
+    env:
+      IMAGE_TAGS: ${{ needs.build.outputs.image-tag }}
     steps:
       - name: Deploy to production
         run: |
           echo "Deploying to production..."
-          echo "Image: ${{ needs.build.outputs.image-tag }}"
+          echo "Image tags:"
+          echo "$IMAGE_TAGS"
